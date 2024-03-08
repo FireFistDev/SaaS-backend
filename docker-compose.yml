@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  saas:     
+    build:
+      context: .
+    volumes:
+      - ./:/app
+    command: npm run start:dev
+    ports:
+      - '3000:3000'
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=nest_app
+

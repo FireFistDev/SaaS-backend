@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Industry {
+  Finance
+  Commerce
+}
+
+enum SubscriptionPlan {
+  Free
+  Basic
+  Premium
+}
+
+enum Visibility {
+  Public
+  Private
+}
+
+model Company {
+  id             Int             @id @default(autoincrement())
+  name           String          @default("")
+  email          String          @unique
+  passwordHash   String
+  country        String
+  billing        Int
+  industry       Industry
+  workers        User[]
+  companyFiles   UploadedFile[]  @relation("companyFiles")
+  subscription   Subscription?
+  subscriptionId Int             @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Subscription {
+  id        Int              @id @default(autoincrement())
+  plan      SubscriptionPlan
+  expiresAt DateTime
+  company   Company          @relation(fields: [companyId], references: [id])
+  companyId Int              @unique
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  passwordHash  String
+  companyId     Int
+  company       Company         @relation(fields: [companyId], references: [id])
+  ownedFiles    UploadedFile[]  @relation("ownedFiles")
+  visibleFiles  UploadedFile[]  @relation("visibleFiles")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([email, companyId])
+}
+
+model UploadedFile {
+  id                 Int            @id @default(autoincrement())
+  filename           String
+  visibility         Visibility     @default(Private)
+  owner              User  @relation("ownedFiles", fields: [ownerId], references: [id])
+  ownerId            Int
+  visibleForWorker   User? @relation("visibleFiles", fields: [visibleForWorkerId], references: [id])
+  visibleForWorkerId Int?
+  company            Company @relation("companyFiles", fields: [companyId], references: [id])
+  companyId          Int
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}

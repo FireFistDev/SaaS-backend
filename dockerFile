@@ -1,0 +1,20 @@
+# Start from the Node.js LTS version
+FROM node:lts-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Copy the entire project
+COPY . .
+# Install dependencies
+
+RUN npm install
+
+# Expose the port
+EXPOSE 3000
+
+# Start the application in watch mode
+CMD ["npm", "run", "start:dev"]
