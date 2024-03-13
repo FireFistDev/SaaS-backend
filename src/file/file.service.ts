@@ -3,6 +3,7 @@ import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { PrismaService } from '@app/prisma';
 import { Visibility } from '@prisma/client';
+import { SubscriptionPlans } from 'src/subscription/entities/subscription.entity';
 
 @Injectable()
 export class FileService {
@@ -12,6 +13,32 @@ export class FileService {
 
   async create(createFileDto: CreateFileDto) {
     try {
+      const { companyId } = createFileDto;
+
+      const company = await this.prismaService.company.findUnique({
+        where: { id: companyId },
+        include: { companyFiles : true }
+        });
+  
+      if (!company || !company.subscription) {
+        throw new HttpException('Company subscription not found', HttpStatus.BAD_REQUEST);
+      }
+      
+      const { maxFile } = SubscriptionPlans[company.subscription];
+      const currentFilesCount = company.companyFiles.length;
+  
+      if (currentFilesCount >= maxFile) {
+        throw new HttpException('Maximum Filex limit reached for the current subscription plan', HttpStatus.BAD_REQUEST);
+      }
+        
+      if(company.subscription === 'PremiumTier'){
+        //  await this.comnpanyService.
+
+        
+      }
+
+
+
       return await this.prismaService.uploadedFile.create({
         data: {
           ...createFileDto,
@@ -62,7 +89,7 @@ export class FileService {
     }
   }
 
-  
+
   
   findOne(id: number) {
     try {

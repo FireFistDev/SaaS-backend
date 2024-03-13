@@ -1,60 +1,62 @@
-import { Controller, Get, Post, Body, Delete, Param, UseGuards, Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, UseGuards, Req } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { AuthService } from 'src/auth/auth.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { SubscriptionService } from 'src/subscription/subscription.service';
-import { SubscriptionsEnum } from 'src/subscription/entities/subscription.entity';
 import { CompanyGuard } from '@app/guard/guard';
-import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { Company } from '@prisma/client';
+import { Company, SubscriptionEnum } from '@prisma/client';
 import { FileService } from 'src/file/file.service';
+import { AuthService } from 'src/auth/auth.service';
 
 
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService, private userService : UserService , private fileService : FileService) {}
-  
+  constructor(private readonly companyService: CompanyService, private userService: UserService, private fileService: FileService ) { }
 
-  @UseGuards(CompanyGuard) 
+
+  //  SELECT SUBSCRIPTION MODEL
+  @UseGuards(CompanyGuard)
+  @Post('select/subscription/:tier')
+  async selectSubscription(@Req() req: Request) {
+    const { id } = req.user as Company;
+    const { tier } = req.params;
+    const TierName: SubscriptionEnum = tier as SubscriptionEnum;
+    return await this.companyService.selectSubscription(id, TierName)
+  }
+
+  // GET EVERY  USER INSIDE COMPANY
+  @UseGuards(CompanyGuard)
   @Get('/getusers')
-  getAllUser(@Req() req : Request){
-    const {id}  = req.user as Company;
+  getAllUser(@Req() req: Request) {
+    const { id } = req.user as Company;
     return this.userService.findAll(+id)
   }
 
-  @UseGuards(CompanyGuard) 
+  // CREATE  USER  INSIDE COMPANY
+  @UseGuards(CompanyGuard)
   @Post('/createuser')
-  createUser(@Req() req : Request){
-    const {id}  = req.user as Company;
+  registerUser(@Req() req: Request) {
+    const { id } = req.user as Company;
     const payload = req.body;
-    const User = {...payload,companyId : id} as CreateCompanyDto
-    console.log(User)
-    return this.companyService.CreateUser(User)
+    const User: CreateUserDto = { ...payload, companyId: id }
+    return this.companyService.registerUser(User)
   }
 
-
+  //  DELETE USER 
+  @UseGuards(CompanyGuard)
   @Delete('/deleteuser')
-  deleteUser(id :number){
+  deleteUser(id: number) {
     return this.userService.remove(id)
   }
-  @UseGuards(CompanyGuard) 
-  @Post('select/subscription/:tier')
-  selectSubscription(@Req() req : Request) {
-    const {id}  = req.user as Company;
-    const payload = req.params;
-    const plan =this.companyService.selectPlan(payload.tier, id);
-  }
-  // @UseGuards(CompanyGuard) 
+
+  //  GET COMPANY FILES
+  @UseGuards(CompanyGuard)
   @Get('/getfiles')
-  getAllFiles(@Req() req : Request){
-    // const {id}  = req.user as Company;
-    return this.fileService.findAll(3)
+  getAllFiles(@Req() req: Request) {
+    const { id } = req.user as Company;
+    return this.fileService.findAll(id)
   }
 
 
 }
-  

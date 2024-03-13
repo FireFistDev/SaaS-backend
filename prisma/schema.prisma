@@ -18,7 +18,7 @@ enum Industry {
   Commerce
 }
 
-enum SubscriptionPlan {
+enum SubscriptionEnum {
   FreeTier
   BasicTier
   PremiumTier
@@ -30,29 +30,20 @@ enum Visibility {
 }
 
 model Company {
-  id           Int            @id @default(autoincrement())
-  isActive     Boolean        @default(false)
-  name         String         @default("")
-  email        String         @unique
-  passwordHash String
-  country      String
-  billing      Int            @default(0)
-  industry     Industry
-  workers      User[]
-  companyFiles UploadedFile[] @relation("companyFiles")
-  subscription Subscription?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-}
-
-model Subscription {
-  id        Int              @id @default(autoincrement())
-  plan      SubscriptionPlan
-  expiresAt DateTime         @default(dbgenerated("(DATEADD(MONTH, 1, GETDATE()))"))
-  company   Company          @relation(fields: [companyId], references: [id])
-  companyId Int              @unique
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id                    Int               @id @default(autoincrement())
+  isActive              Boolean           @default(false)
+  name                  String            @default("")
+  email                 String            @unique
+  passwordHash          String
+  country               String
+  billing               Int               @default(0)
+  industry              Industry
+  workers               User[]
+  companyFiles          UploadedFile[]    @relation("companyFiles")
+  subscription          SubscriptionEnum?
+  subscriptionExpiresAt DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 }
 
 model User {

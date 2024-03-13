@@ -13,6 +13,7 @@ export class AuthController {
   registerCompany(@Body() CreateCompanyDto){
     return this.authService.registerCompany(CreateCompanyDto)
   }
+  
 
   @UseGuards(JwtGuard)
   @Get('/activate/company')

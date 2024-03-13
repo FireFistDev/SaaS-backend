@@ -9,11 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { CompanyStrategy } from '@app/jwt';
 import { FileService } from 'src/file/file.service';
+import { SubscriptionModule } from 'src/subscription/subscription.module';
+import { AuthService } from 'src/auth/auth.service';
 
 
 @Module({
-  imports: [PrismaModule, AuthModule],
-  providers: [CompanyService, UserService, SubscriptionService , JwtService, CompanyStrategy , FileService],
+  imports: [PrismaModule],
+  providers: [CompanyService, UserService, CompanyStrategy , FileService ,JwtService],
   controllers: [CompanyController],
   exports: [CompanyService]
 })

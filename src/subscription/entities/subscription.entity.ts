@@ -1,30 +1,29 @@
+import { SubscriptionEnum } from "@prisma/client";
+
 export interface SubscriptionTier {
+    TierName: SubscriptionEnum
     maxFile: number;
     price: number;
     maxUsers : number
 }
 
-export enum SubscriptionsEnum {
-    FreeTier = 'FreeTier',
-    BasicTier = 'BasicTier',
-    PremiumTier = 'PremiumTier'
-}
-
-
-export const SubscriptionPlans: Record<SubscriptionsEnum, SubscriptionTier> = {
-    [SubscriptionsEnum.FreeTier]: {
+export const SubscriptionPlans: Record<SubscriptionEnum, SubscriptionTier> = {
+    [SubscriptionEnum.FreeTier]: {
+        TierName: 'FreeTier',
         maxFile: 10,
         price: 0,
         maxUsers : 1
     },
-    [SubscriptionsEnum.BasicTier]: {
+    [SubscriptionEnum.BasicTier]: {
+        TierName: 'BasicTier',
         maxFile: 100,
         price: 5,
         maxUsers : 10
     },
-    [SubscriptionsEnum.PremiumTier]: {
+    [SubscriptionEnum.PremiumTier]: {
+        TierName: 'PremiumTier',
         maxFile: 1000,
         price: 300,
-        maxUsers : -1,
+        maxUsers : Infinity ,
     },
 };

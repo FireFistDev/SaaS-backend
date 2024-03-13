@@ -1,17 +1,20 @@
 import { BadGatewayException, Injectable } from '@nestjs/common';
-import { SubscriptionsEnum, SubscriptionTier, SubscriptionPlans } from './entities/subscription.entity';
-
+import { SubscriptionTier, SubscriptionPlans } from './entities/subscription.entity';
+import { SubscriptionEnum } from '@prisma/client';
+import { create } from 'domain';
+import { PrismaService } from '@app/prisma';
 @Injectable()
 export class SubscriptionService {
-  findAll(): Record<SubscriptionsEnum, SubscriptionTier> {
+  constructor(private prismaService : PrismaService){}
+  findAll(): Record<SubscriptionEnum, SubscriptionTier> {
     return SubscriptionPlans;
   }
 
-  async findTier(subscriptionEnum: SubscriptionsEnum): Promise<SubscriptionTier | null> {
+  async findTier(subscriptionEnum: SubscriptionEnum): Promise<SubscriptionTier | null> {
     try {
       if(!SubscriptionPlans[subscriptionEnum]){
-      
-       throw new BadGatewayException('no subscription plan')
+        throw new BadGatewayException('no subscription plan')
+
       }
       return SubscriptionPlans[subscriptionEnum] ;
     } catch (error) {
@@ -19,5 +22,14 @@ export class SubscriptionService {
     }
   }
 
+  async selectSubscription(id :number , subscriptionEnum: SubscriptionEnum) { 
+    try {
+      const plan = SubscriptionPlans[subscriptionEnum] 
+      console.log(plan)
+      const company =  this.prismaService.company.update({where: {id}, data : { subscription: plan.TierName,subscriptionExpiresAt : new Date()}})
+    } catch (error) {
+      return error.message;
+    }
+  }
 
 }

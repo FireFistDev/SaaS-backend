@@ -4,6 +4,8 @@ import { CompanyService } from 'src/company/company.service';
 import * as bcrypt from 'bcrypt'
 import { UserService } from '../user/user.service'
 import { LoginDto } from './dto/auth.dto';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { AuthModule } from './auth.module';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +14,7 @@ export class AuthService {
 
 
 
-
+    // კომპანიის რეგისტრაციისს სერვისი და პაროლის დაჰაშვა
     async registerCompany(payload: any): Promise<string> {
         try {
             let passwordHash = await bcrypt.hash(payload.passwordHash, 10)
@@ -27,7 +29,7 @@ export class AuthService {
         }
     }
 
-
+    //  კომპანიის აქტივაცი 
     async activateCompany(Company) {
         try {
             return this.companyService.update(Company.id, { isActive: true })
@@ -39,7 +41,7 @@ export class AuthService {
         }
     }
 
-
+    //  შესვლა პროფილზე 
     async loginCompany(LoginDto) {
         try {
             const company = await this.companyService.FindOne(LoginDto.email)
@@ -58,6 +60,7 @@ export class AuthService {
     }
 
 
+    // თანამშრომლის აქტივაცია
     async activateUser(user, updateUserDto) {
         try {
 
@@ -72,7 +75,7 @@ export class AuthService {
         }
     }
 
-
+    //  თანამშრომლის პროფილზე შესვლა 
     async loginUser(LoginDto: LoginDto) {
         try {
             const user = await this.userService.findOne(LoginDto.email)

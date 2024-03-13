@@ -1,13 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { FileService } from 'src/file/file.service';
 import { Request } from 'express';
 import { JwtGuard } from '@app/guard/guard';
 import { User } from '@prisma/client';
 import { CreateFileDto } from 'src/file/dto/create-file.dto';
-import { UpdateFileDto } from 'src/file/dto/update-file.dto';
+
+
 
 @Controller('user')
 export class UserController {
