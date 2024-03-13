@@ -5,20 +5,19 @@ import { PrismaService } from '@app/prisma';
 
 @Injectable()
 export class UserService {
-  constructor(private prismaService :PrismaService){}
+  constructor(private prismaService: PrismaService) { }
 
 
   async create(createUserDto: CreateUserDto) {
-  try {
-    const user = await this.prismaService.user.create({data: createUserDto})
-    return user
-  } catch (error) {
-    throw new HttpException({
-      error: 'Failed to Create User',
-      message: error.message // You can customize the error message here
-    }, HttpStatus.BAD_REQUEST);
-  }
-  
+    try {
+      return await this.prismaService.user.create({ data: createUserDto })
+    } catch (error) {
+      throw new HttpException({
+        error: 'Failed to Create User',
+        message: error.message
+      }, HttpStatus.BAD_REQUEST);
+    }
+
   }
 
   async findAll(id:number) {
@@ -28,7 +27,7 @@ export class UserService {
     } catch (error) {
       throw new BadGatewayException(error.message)
     }
-      
+
   }
 
   async findOne(email: string) {

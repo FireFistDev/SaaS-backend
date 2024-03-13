@@ -5,10 +5,12 @@ import { UserModule } from './user/user.module';
 import { FileModule } from './file/file.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { FileService } from './file/file.service';
+import { PrismaModule } from '@app/prisma';
+import { JwtModule } from '@nestjs/jwt';
 
 // /FileModule, UserModule, SubscriptionModule
 @Module({
-  imports: [AuthModule ,CompanyModule , UserModule],
+  imports: [PrismaModule,AuthModule,CompanyModule],
   controllers: [],
 })
-export class AppModule {}
+export class AppModule { }

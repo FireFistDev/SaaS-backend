@@ -11,13 +11,15 @@ import { CompanyStrategy } from '@app/jwt';
 import { FileService } from 'src/file/file.service';
 import { SubscriptionModule } from 'src/subscription/subscription.module';
 import { AuthService } from 'src/auth/auth.service';
+import { UserModule } from 'src/user/user.module';
+import { FileModule } from 'src/file/file.module';
 
 
 @Module({
-  imports: [PrismaModule],
-  providers: [CompanyService, UserService, CompanyStrategy , FileService ,JwtService],
+  imports: [PrismaModule, AuthModule, UserModule, FileModule],
+  providers: [CompanyService  ],
   controllers: [CompanyController],
-  exports: [CompanyService]
+  exports: [CompanyService ]
 })
 export class CompanyModule {
 }

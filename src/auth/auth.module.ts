@@ -18,8 +18,9 @@ import { PrismaModule } from '@app/prisma';
       signOptions: { expiresIn: '1h' },
     }),
   ],
+  
   controllers: [AuthController],
-  providers: [AuthService, jwtStrategy, CompanyService, UserService],
+  providers: [AuthService, jwtStrategy ,CompanyService, UserService],
   exports : [AuthService]
 })
 export class AuthModule {}

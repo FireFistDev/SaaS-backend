@@ -12,7 +12,7 @@ import { AuthService } from 'src/auth/auth.service';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService, private userService: UserService, private fileService: FileService ) { }
+  constructor(private readonly companyService: CompanyService , private userService : UserService , private authService : AuthService , private fileService : FileService) { }
 
 
   //  SELECT SUBSCRIPTION MODEL
@@ -22,7 +22,7 @@ export class CompanyController {
     const { id } = req.user as Company;
     const { tier } = req.params;
     const TierName: SubscriptionEnum = tier as SubscriptionEnum;
-    return await this.companyService.selectSubscription(id, TierName)
+    // return await this.companyService.selectSubscription(id, TierName)
   }
 
   // GET EVERY  USER INSIDE COMPANY
@@ -40,7 +40,7 @@ export class CompanyController {
     const { id } = req.user as Company;
     const payload = req.body;
     const User: CreateUserDto = { ...payload, companyId: id }
-    return this.companyService.registerUser(User)
+    return this.authService.registerUser(User)
   }
 
   //  DELETE USER 

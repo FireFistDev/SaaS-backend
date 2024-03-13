@@ -4,17 +4,19 @@ import { CompanyService } from 'src/company/company.service';
 import * as bcrypt from 'bcrypt'
 import { UserService } from '../user/user.service'
 import { LoginDto } from './dto/auth.dto';
+import { SubscriptionPlans } from 'src/subscription/entities/subscription.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { AuthModule } from './auth.module';
+import { PrismaService } from '@app/prisma';
 
 @Injectable()
 export class AuthService {
 
-    constructor(private jwtService: JwtService, private companyService: CompanyService, private userService: UserService) { }
+    constructor(private jwtService: JwtService, private companyService: CompanyService, private userService: UserService, private prismaService: PrismaService) { }
 
 
 
     // კომპანიის რეგისტრაციისს სერვისი და პაროლის დაჰაშვა
+
     async registerCompany(payload: any): Promise<string> {
         try {
             let passwordHash = await bcrypt.hash(payload.passwordHash, 10)
@@ -41,7 +43,7 @@ export class AuthService {
         }
     }
 
-    //  შესვლა პროფილზე 
+    //  შესვლა პროფილზე კომპანიის
     async loginCompany(LoginDto) {
         try {
             const company = await this.companyService.FindOne(LoginDto.email)
@@ -60,6 +62,33 @@ export class AuthService {
     }
 
 
+    //  კომპანიის თანამშრომლის შექმნა 
+    async registerUser(createUserDto: CreateUserDto) {
+        const { companyId } = createUserDto;
+
+        const company = await this.prismaService.company.findUnique({
+            where: { id: companyId },
+            include: { workers: true, }
+        });
+        if (!company || !company.subscription) {
+            throw new HttpException('Company subscription not found', HttpStatus.BAD_REQUEST);
+        }
+        const { maxUsers } = SubscriptionPlans[company.subscription];
+        const currentUserCount = company.workers.length;
+
+        if (currentUserCount >= maxUsers) {
+            throw new HttpException('Maximum user limit reached for the current subscription plan', HttpStatus.BAD_REQUEST);
+        }
+        if (company.subscription === 'BasicTier') {
+            this.companyService.updateBilling(companyId, -5)
+        }
+        const user = await this.userService.create(createUserDto)
+        const token = this.jwtService.sign(user, { secret: process.env.JWT_SECRET_STRING });
+
+        return  this.sentActivationEmail(`localhost:3000/auth/activate/user?token=${token}`);
+    }
+
+
     // თანამშრომლის აქტივაცია
     async activateUser(user, updateUserDto) {
         try {
@@ -74,6 +103,7 @@ export class AuthService {
             }, HttpStatus.BAD_REQUEST);
         }
     }
+
 
     //  თანამშრომლის პროფილზე შესვლა 
     async loginUser(LoginDto: LoginDto) {
