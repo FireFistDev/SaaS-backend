@@ -23,20 +23,29 @@
       ],
       "@app/prisma/*": [
         "libs/prisma/src/*"
+      ],
+      "@app/jwt": [
+        "libs/jwt/src"
+      ],
+      "@app/jwt/*": [
+        "libs/jwt/src/*"
+      ],
+      "@app/guard": [
+        "libs/guard/src"
+      ],
+      "@app/guard/*": [
+        "libs/guard/src/*"
       ]
     }
   },
   "watchOptions": {
-    // Use native file system events for files and directories
     "watchFile": "priorityPollingInterval",
     "watchDirectory": "dynamicprioritypolling",
-    // Poll files for updates more frequently
-    // when they're updated a lot.
     "fallbackPolling": "dynamicPriority",
-    // Don't coalesce watch notification
     "synchronousWatchDirectory": true,
-    // Finally, two additional settings for reducing the amount of possible
-    // files to track  work from these directories
-    "excludeDirectories": ["**/node_modules", "dist"]
-  },
+    "excludeDirectories": [
+      "**/node_modules",
+      "dist"
+    ]
+  }
 }

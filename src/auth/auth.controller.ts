@@ -1,27 +1,44 @@
-import { Controller,Get,Param,Post, Redirect } from '@nestjs/common';
+import { Body, Controller,Get,Param,Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto} from './dto/auth.dto'
+import { CompanyGuard, JwtGuard } from '@app/guard/guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly authService: AuthService) {}
 
 
+  @Post('/register/company')
+  registerCompany(@Body() CreateCompanyDto){
+    return this.authService.registerCompany(CreateCompanyDto)
   }
 
-  
-  @Post()
-  async createCompany(){
-    await this.activationEmail('23123')
-    return this.authService.createCompany()
+  @UseGuards(JwtGuard)
+  @Get('/activate/company')
+  activateCompany(@Req() req : Request){
+    const company = req.user;
+    return this.authService.activateCompany(company)
   }
 
-  async activationEmail(token){
-    console.log(token)
+  @Post("/login/company")
+  loginCompany(@Body() LoginDto: LoginDto){
+    return this.authService.loginCompany(LoginDto)
   }
 
-  @Get('/activate/:token')
-  // @Redirect('/login') 
-  async activateUser(@Param('token') token :string){
-    console.log(token)
+
+  @UseGuards(JwtGuard)
+  @Get('/activate/user')
+  activateUser(@Req() req : Request){
+    const user = req.user;
+    const payload = req.body
+    console.log(user, payload)
+    return this.authService.activateUser(user,payload)
+  }
+
+
+  @Post("/login/user")
+  loginUser(@Body() LoginDto: LoginDto){
+    return this.authService.loginUser(LoginDto)
   }
 }

@@ -11,9 +11,7 @@ export class SubscriptionController {
     return this.subscriptionService.findAll();
   }
 
-  @Get(':tier')
-  findOne(@Param('tier') tier: SubscriptionsEnum) {
-    return this.subscriptionService.findTier(tier);
-  }
+  
+
 
 }

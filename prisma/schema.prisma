@@ -19,9 +19,9 @@ enum Industry {
 }
 
 enum SubscriptionPlan {
-  Free
-  Basic
-  Premium
+  FreeTier
+  BasicTier
+  PremiumTier
 }
 
 enum Visibility {
@@ -30,25 +30,25 @@ enum Visibility {
 }
 
 model Company {
-  id             Int             @id @default(autoincrement())
-  name           String          @default("")
-  email          String          @unique
-  passwordHash   String
-  country        String
-  billing        Int
-  industry       Industry
-  workers        User[]
-  companyFiles   UploadedFile[]  @relation("companyFiles")
-  subscription   Subscription?
-  subscriptionId Int             @unique
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id           Int            @id @default(autoincrement())
+  isActive     Boolean        @default(false)
+  name         String         @default("")
+  email        String         @unique
+  passwordHash String
+  country      String
+  billing      Int            @default(0)
+  industry     Industry
+  workers      User[]
+  companyFiles UploadedFile[] @relation("companyFiles")
+  subscription Subscription?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model Subscription {
   id        Int              @id @default(autoincrement())
   plan      SubscriptionPlan
-  expiresAt DateTime
+  expiresAt DateTime         @default(dbgenerated("(DATEADD(MONTH, 1, GETDATE()))"))
   company   Company          @relation(fields: [companyId], references: [id])
   companyId Int              @unique
   createdAt DateTime         @default(now())
@@ -56,30 +56,29 @@ model Subscription {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  name          String
-  email         String          @unique
-  passwordHash  String
-  companyId     Int
-  company       Company         @relation(fields: [companyId], references: [id])
-  ownedFiles    UploadedFile[]  @relation("ownedFiles")
-  visibleFiles  UploadedFile[]  @relation("visibleFiles")
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  passwordHash String?
+  companyId    Int
+  company      Company        @relation(fields: [companyId], references: [id])
+  ownedFiles   UploadedFile[] @relation("ownedFiles")
+  visibleFiles UploadedFile[] @relation("visibleFiles")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   @@unique([email, companyId])
 }
 
 model UploadedFile {
-  id                 Int            @id @default(autoincrement())
-  filename           String
-  visibility         Visibility     @default(Private)
-  owner              User  @relation("ownedFiles", fields: [ownerId], references: [id])
-  ownerId            Int
-  visibleForWorker   User? @relation("visibleFiles", fields: [visibleForWorkerId], references: [id])
-  visibleForWorkerId Int?
-  company            Company @relation("companyFiles", fields: [companyId], references: [id])
-  companyId          Int
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  id                Int        @id @default(autoincrement())
+  filename          String
+  visibility        Visibility @default(Public)
+  owner             User       @relation("ownedFiles", fields: [ownerId], references: [id])
+  ownerId           Int
+  visibleForWorkers User[]     @relation("visibleFiles")
+  company           Company    @relation("companyFiles", fields: [companyId], references: [id])
+  companyId         Int
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }

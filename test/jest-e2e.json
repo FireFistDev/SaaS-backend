@@ -12,6 +12,10 @@
   },
   "moduleNameMapper": {
     "@app/prisma/(.*)": "<rootDir>/../libs/prisma/src/$1",
-    "@app/prisma": "<rootDir>/../libs/prisma/src"
+    "@app/prisma": "<rootDir>/../libs/prisma/src",
+    "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
+    "@app/jwt": "<rootDir>/../libs/jwt/src",
+    "@app/guard/(.*)": "<rootDir>/../libs/guard/src/$1",
+    "@app/guard": "<rootDir>/../libs/guard/src"
   }
 }
