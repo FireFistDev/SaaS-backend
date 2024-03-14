@@ -9,6 +9,7 @@ import { CompanyModule } from 'src/company/company.module';
 import { UserService } from 'src/user/user.service';
 import { UserModule } from 'src/user/user.module';
 import { PrismaModule } from '@app/prisma';
+import { MailerModule } from '@nestjs-modules/mailer';
 @Module({
   imports: [
     PrismaModule,

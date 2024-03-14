@@ -1,0 +1,19 @@
+import  WebDriver  from "selenium-webdriver";
+const {By , until} = WebDriver;
+export const ConfirmAge = async  (driver) => {
+    let childDivs = await driver.wait(until.elementsLocated(By.css('.info > div')));
+    for (let element of childDivs) {
+      // Check if the element is interactable (e.g., clickable)
+      let isInteractable = await element.isEnabled();
+      if (isInteractable) {
+          // Check if the element is visible
+          let isVisible = await element.isDisplayed();
+          if (isVisible) {
+              // Perform click action on the interactable and visible element
+              await element.click();
+              // Break out of the loop since we found the interactable element
+              break;
+          }
+      }
+  }
+  }

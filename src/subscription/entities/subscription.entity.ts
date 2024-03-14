@@ -5,6 +5,7 @@ export interface SubscriptionTier {
     maxFile: number;
     price: number;
     maxUsers : number
+    UserPrice? : number
 }
 
 export const SubscriptionPlans: Record<SubscriptionEnum, SubscriptionTier> = {
@@ -17,8 +18,9 @@ export const SubscriptionPlans: Record<SubscriptionEnum, SubscriptionTier> = {
     [SubscriptionEnum.BasicTier]: {
         TierName: 'BasicTier',
         maxFile: 100,
-        price: 5,
-        maxUsers : 10
+        price: 0,
+        maxUsers : 10,
+        UserPrice : 5,
     },
     [SubscriptionEnum.PremiumTier]: {
         TierName: 'PremiumTier',

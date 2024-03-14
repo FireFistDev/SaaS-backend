@@ -8,9 +8,9 @@ import { FileService } from './file/file.service';
 import { PrismaModule } from '@app/prisma';
 import { JwtModule } from '@nestjs/jwt';
 
-// /FileModule, UserModule, SubscriptionModule
 @Module({
-  imports: [PrismaModule,AuthModule,CompanyModule],
+  imports: [PrismaModule,AuthModule,CompanyModule, SubscriptionModule],
+  // imports : [ SubscriptionModule],
   controllers: [],
 })
 export class AppModule { }

@@ -1,35 +1,27 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
-import { SubscriptionTier, SubscriptionPlans } from './entities/subscription.entity';
-import { SubscriptionEnum } from '@prisma/client';
-import { create } from 'domain';
 import { PrismaService } from '@app/prisma';
+import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
+
 @Injectable()
 export class SubscriptionService {
-  constructor(private prismaService : PrismaService){}
-  findAll(): Record<SubscriptionEnum, SubscriptionTier> {
-    return SubscriptionPlans;
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
-  async findTier(subscriptionEnum: SubscriptionEnum): Promise<SubscriptionTier | null> {
-    try {
-      if(!SubscriptionPlans[subscriptionEnum]){
-        throw new BadGatewayException('no subscription plan')
-
-      }
-      return SubscriptionPlans[subscriptionEnum] ;
-    } catch (error) {
-      return error.message;
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT) 
+  async chargeSubscriptions() {
+    const currentDay = new Date();
+    const tomorrow = new Date(currentDay);
+    tomorrow.setDate(currentDay.getDate() + 1);
+    const companies = await this.prismaService.company.findMany({
+      where: {
+        subscriptionExpiresAt: {
+          gte: currentDay,
+          lte: tomorrow,
+        },
+      },
+    });
+    for(let subscription of companies) {
+      console.log(subscription , ' lets charge there')
     }
   }
-
-  async selectSubscription(id :number , subscriptionEnum: SubscriptionEnum) { 
-    try {
-      const plan = SubscriptionPlans[subscriptionEnum] 
-      console.log(plan)
-      const company =  this.prismaService.company.update({where: {id}, data : { subscription: plan.TierName,subscriptionExpiresAt : new Date()}})
-    } catch (error) {
-      return error.message;
-    }
-  }
-
 }

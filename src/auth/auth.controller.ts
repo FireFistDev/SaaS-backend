@@ -4,6 +4,8 @@ import { LoginDto } from './dto/auth.dto'
 import { CompanyGuard, JwtGuard } from '@app/guard/guard';
 import { Request } from 'express';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
+import { Company, User } from '@prisma/client';
+import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -16,12 +18,13 @@ export class AuthController {
   }
 
   //  ACTVATE COMPANY
-  @UseGuards(JwtGuard)
+  @UseGuards(CompanyGuard)
   @Get('/activate/company')
   activateCompany(@Req() req: Request) {
-    const company = req.user;
+    const  company = req.user as Company;
     return this.authService.activateCompany(company)
   }
+
   // LOGIN COMPANY
   @Post("/login/company")
   loginCompany(@Body() LoginDto: LoginDto) {
@@ -32,8 +35,8 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @Get('/activate/user')
   activateUser(@Req() req: Request) {
-    const user = req.user;
-    const payload = req.body
+    const user = req.user as User;
+    const payload = req.body as UpdateUserDto
     console.log(user, payload)
     return this.authService.activateUser(user, payload)
   }

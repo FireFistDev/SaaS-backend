@@ -3,7 +3,13 @@ import { IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateIf } from 'class-vali
 
 export class CreateFileDto {
   @IsNotEmpty()
+  id: string;
+
+  @IsNotEmpty()
   filename: string;
+
+  @IsNotEmpty()
+  filePath: string;
 
   @IsEnum(Visibility)
   @IsNotEmpty()

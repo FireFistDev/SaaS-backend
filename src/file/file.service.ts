@@ -2,13 +2,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { PrismaService } from '@app/prisma';
-import { Visibility } from '@prisma/client';
 import { SubscriptionPlans } from 'src/subscription/entities/subscription.entity';
+import { CompanyService } from 'src/company/company.service';
 
 @Injectable()
 export class FileService {
 
-  constructor(private prismaService: PrismaService) { }
+  constructor(private prismaService: PrismaService ,  private companyService : CompanyService) { }
 
 
   async create(createFileDto: CreateFileDto) {
@@ -27,30 +27,30 @@ export class FileService {
       const { maxFile } = SubscriptionPlans[company.subscription];
       const currentFilesCount = company.companyFiles.length;
   
-      if (currentFilesCount >= maxFile) {
-        throw new HttpException('Maximum Filex limit reached for the current subscription plan', HttpStatus.BAD_REQUEST);
+      const isPremiumTier = company.subscription === 'PremiumTier';
+
+      // If maximum file count is reached and the user is not on premium tier, throw exception
+      if (currentFilesCount >= maxFile && !isPremiumTier) {
+          throw new HttpException('Maximum File limit reached for the current subscription plan', HttpStatus.BAD_REQUEST);
       }
-        
-      if(company.subscription === 'PremiumTier'){
-        //  await this.comnpanyService.
-
-        
+  
+      // If maximum file count is reached and the user is on premium tier, update billing and continue to create new file
+      if (currentFilesCount >= maxFile && isPremiumTier) {
+          await this.companyService.updateBilling(companyId, -0.5);
       }
-
-
 
       return await this.prismaService.uploadedFile.create({
         data: {
           ...createFileDto,
           visibleForWorkers: {
-            connect:  createFileDto.visibility  === "Public" ? createFileDto.visibleForWorkers.map(id => ({ id }))  :  []
+            connect:  createFileDto.visibility  !== "Public" ? createFileDto.visibleForWorkers.map(id => ({ id }))  :  []
           }
         }
       })
     } catch (error) {
       throw new HttpException({
         error: 'Failed to Upload File',
-        message: error.message.split('\n').reverse()[0], // You can customize the error message here
+        message: error.message.split('\n').reverse()[0], 
       }, HttpStatus.BAD_REQUEST);
     }
   }
@@ -62,15 +62,13 @@ export class FileService {
     } catch (error) {
       throw new HttpException({
         error: 'Failed to Find Files',
-        message: error.message.split('\n').reverse()[0], // You can customize the error message here
+        message: error.message.split('\n').reverse()[0], 
       }, HttpStatus.BAD_REQUEST);
     }
   }
 
 
-
-
-  update(id: number, updateFileDto: UpdateFileDto) {
+  update(id: string, updateFileDto: UpdateFileDto) {
     try {
       return this.prismaService.uploadedFile.update({
         where: { id }, data: {
@@ -91,7 +89,7 @@ export class FileService {
 
 
   
-  findOne(id: number) {
+  findOne(id: string) {
     try {
       return this.prismaService.uploadedFile.findUnique({ where: { id } })
     } catch (error) {
@@ -103,7 +101,7 @@ export class FileService {
   }
 
 
-  remove(id: number) {
+  remove(id: string) {
     try {
       return this.prismaService.uploadedFile.delete({ where: { id } })
     } catch (error) {

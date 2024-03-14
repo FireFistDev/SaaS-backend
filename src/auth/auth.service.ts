@@ -7,32 +7,46 @@ import { LoginDto } from './dto/auth.dto';
 import { SubscriptionPlans } from 'src/subscription/entities/subscription.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { PrismaService } from '@app/prisma';
-
+import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
+import * as nodemailer from 'nodemailer'
+import { Company, User } from '@prisma/client';
+import { UpdateCompanyDto } from 'src/company/dto/update-company.dto';
+import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 @Injectable()
 export class AuthService {
-
-    constructor(private jwtService: JwtService, private companyService: CompanyService, private userService: UserService, private prismaService: PrismaService) { }
-
-
+    private transporter: nodemailer.Transporter;
+    constructor(private jwtService: JwtService, private companyService: CompanyService, private userService: UserService, private prismaService: PrismaService) {
+        this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth : {
+              user: 'akakigumberidze988@gmail.com',
+              pass: 'keze ypnb qgtv wvnw'
+            }
+          })
+    }
 
     // კომპანიის რეგისტრაციისს სერვისი და პაროლის დაჰაშვა
-
-    async registerCompany(payload: any): Promise<string> {
+    async registerCompany(createCompanyDto: CreateCompanyDto): Promise<any> {
         try {
-            let passwordHash = await bcrypt.hash(payload.passwordHash, 10)
-            const Company = await this.companyService.create({ ...payload, passwordHash })
+            let passwordHash = await bcrypt.hash(createCompanyDto.passwordHash, 10)
+            const Company = await this.companyService.create({ ...createCompanyDto, passwordHash })
             const token = this.jwtService.sign(Company);
-            return this.sentActivationEmail(`localhost:3000/auth/activate/company?token=${token}`)
+            const link  = `auth/activate/company?token=${token}`
+            return this.sendActivationEmail(link ,Company.email)
         } catch (error) {
             throw new HttpException({
                 error: 'Failed to register company',
-                message: error.message.split('\n').reverse()[0], // You can customize the error message here
+                message: error.message.split('\n').reverse()[0],
             }, HttpStatus.BAD_REQUEST);
         }
     }
 
+
     //  კომპანიის აქტივაცი 
-    async activateCompany(Company) {
+    async activateCompany(Company :  Company) {
         try {
             return this.companyService.update(Company.id, { isActive: true })
         } catch (error) {
@@ -44,17 +58,16 @@ export class AuthService {
     }
 
     //  შესვლა პროფილზე კომპანიის
-    async loginCompany(LoginDto) {
+    async loginCompany(LoginDto : LoginDto) {
         try {
             const company = await this.companyService.FindOne(LoginDto.email)
             if (!company.isActive) throw new Error('active your account');
             const comparePassword = await bcrypt.compare(LoginDto.password, company.passwordHash)
             if (!comparePassword) throw new Error('wrong Password');
-            const token = this.jwtService.sign(company)
-            return token
+            return  this.jwtService.sign(company)
         } catch (error) {
             throw new HttpException({
-                error: 'Failed to activate User',
+                error: 'Failed to  Login in Company profile',
                 message: error.message.split('\n').reverse()[0], // You can customize the error message here
             }, HttpStatus.BAD_REQUEST);
 
@@ -64,38 +77,40 @@ export class AuthService {
 
     //  კომპანიის თანამშრომლის შექმნა 
     async registerUser(createUserDto: CreateUserDto) {
-        const { companyId } = createUserDto;
 
+        const { companyId } = createUserDto;
         const company = await this.prismaService.company.findUnique({
             where: { id: companyId },
             include: { workers: true, }
         });
+
         if (!company || !company.subscription) {
             throw new HttpException('Company subscription not found', HttpStatus.BAD_REQUEST);
         }
-        const { maxUsers } = SubscriptionPlans[company.subscription];
+        
+        const { maxUsers ,UserPrice  } = SubscriptionPlans[company.subscription];
         const currentUserCount = company.workers.length;
 
         if (currentUserCount >= maxUsers) {
             throw new HttpException('Maximum user limit reached for the current subscription plan', HttpStatus.BAD_REQUEST);
         }
         if (company.subscription === 'BasicTier') {
-            this.companyService.updateBilling(companyId, -5)
+            this.companyService.updateBilling(companyId, -UserPrice)
         }
         const user = await this.userService.create(createUserDto)
         const token = this.jwtService.sign(user, { secret: process.env.JWT_SECRET_STRING });
 
-        return  this.sentActivationEmail(`localhost:3000/auth/activate/user?token=${token}`);
+        const link  = `auth/activate/company?token=${token}`
+        return this.sendActivationEmail(link ,user.email)
     }
 
 
     // თანამშრომლის აქტივაცია
-    async activateUser(user, updateUserDto) {
+    async activateUser(user : User, updateUserDto : UpdateUserDto) {
         try {
 
-            let passwordHash = await bcrypt.hash(updateUserDto.password, 10)
+            let passwordHash = await bcrypt.hash(updateUserDto.passwordHash, 10)
             return this.userService.update(user.id, { passwordHash })
-
         } catch (error) {
             throw new HttpException({
                 error: 'Failed to activate User',
@@ -124,8 +139,21 @@ export class AuthService {
     }
 
 
-    sentActivationEmail(token: any): string {
-        return token
+    async sendActivationEmail(link : string , email : string): Promise<void> {
+        const mailOptions = {
+            from: process.env.EMAIL_FROM, // sender address
+            to: email, // list of receivers
+            subject: 'Activate your account', // Subject line
+            html: `<p>Please click <a href="${process.env.BASE_URL}/${link}">here</a> to activate your account.</p>`
+        };
+        this.transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+            } else {
+                console.log('Activation email sent:', info.response);
+            }
+        });
     }
+    
 
 }

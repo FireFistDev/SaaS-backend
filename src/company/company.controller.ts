@@ -7,13 +7,13 @@ import { Request } from 'express';
 import { Company, SubscriptionEnum } from '@prisma/client';
 import { FileService } from 'src/file/file.service';
 import { AuthService } from 'src/auth/auth.service';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 
 
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService , private userService : UserService , private authService : AuthService , private fileService : FileService) { }
-
 
   //  SELECT SUBSCRIPTION MODEL
   @UseGuards(CompanyGuard)
@@ -22,7 +22,15 @@ export class CompanyController {
     const { id } = req.user as Company;
     const { tier } = req.params;
     const TierName: SubscriptionEnum = tier as SubscriptionEnum;
-    // return await this.companyService.selectSubscription(id, TierName)
+    return await this.companyService.selectSubscription(id, TierName)
+  }
+
+  @UseGuards(CompanyGuard)
+  @Post('update/company')
+  updateCompany(@Req() req: Request) {
+    const { id } = req.user as Company;
+    const payload = req.body as UpdateCompanyDto;
+    return this.companyService.update(id , payload)
   }
 
   // GET EVERY  USER INSIDE COMPANY
@@ -38,16 +46,16 @@ export class CompanyController {
   @Post('/createuser')
   registerUser(@Req() req: Request) {
     const { id } = req.user as Company;
-    const payload = req.body;
+    const payload = req.body ;
     const User: CreateUserDto = { ...payload, companyId: id }
     return this.authService.registerUser(User)
   }
 
   //  DELETE USER 
   @UseGuards(CompanyGuard)
-  @Delete('/deleteuser')
-  deleteUser(id: number) {
-    return this.userService.remove(id)
+  @Delete('/deleteuser/:userid')
+  deleteUser(userid: number) {
+    return this.userService.remove(userid)
   }
 
   //  GET COMPANY FILES
