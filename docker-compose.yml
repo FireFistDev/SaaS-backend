@@ -1,17 +1,27 @@
 version: '3'
 
 services:
-  saas:     
+  app: 
     build:
       context: .
+      dockerfile: Dockerfile
     volumes:
-      - ./:/app
-    command: npm run start:dev
+      - ./src:/app/src
     ports:
-      - '3000:3000'
+      - "3000:3000"
+    env_file: 
+      - .env 
     environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=root
-      - MYSQL_DATABASE=nest_app
+      DATABASE_URL: "mysql://sweeft:sweeft@mysql:3306/sweeft-database?schema=public"
 
+  mysql:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: sweeft-database
+      MYSQL_USER: sweeft
+      MYSQL_PASSWORD: sweeft
+    volumes:
+      - ./mysql_data:/var/lib/mysql

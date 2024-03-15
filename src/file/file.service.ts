@@ -56,9 +56,26 @@ export class FileService {
   }
 
 
-  findAll(companyId: number) {
+   async findAll(companyId: number) {
     try {
-      return this.prismaService.uploadedFile.findMany({ where: { companyId }, include: { visibleForWorkers: { select: { id: true, name: true } } } })
+      return await  this.prismaService.uploadedFile.findMany({ where: { companyId  }, include: { visibleForWorkers: { select: { id: true, name: true } } } })
+    } catch (error) {
+      throw new HttpException({
+        error: 'Failed to Find Files',
+        message: error.message.split('\n').reverse()[0], 
+      }, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+    async findUserFiles(companyId: number , userId : number) {
+    try {
+      const PublicFiles =  await this.prismaService.uploadedFile.findMany({ where: { companyId , visibility : "Public" }, include: { visibleForWorkers: { select: { id: true, name: true } } } })
+      const visibleForWorkers = await  this.prismaService.user.findUnique({where: { id : userId , }, include : { visibleFiles : true}})
+      const allVisibleFiles = [
+        ...PublicFiles,
+        ...visibleForWorkers.visibleFiles
+      ];
+      return allVisibleFiles
     } catch (error) {
       throw new HttpException({
         error: 'Failed to Find Files',

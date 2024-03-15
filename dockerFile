@@ -1,20 +1,21 @@
 # Start from the Node.js LTS version
-FROM node:lts-alpine
-
+FROM node:latest
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package.json and package-lock.json separately
+COPY package.json .
+COPY package-lock.json .
 
-# Copy the entire project
+RUN npm install 
+
 COPY . .
-# Install dependencies
+# Generate Prisma client
 
-RUN npm install
+RUN npx prisma generate
 
+RUN npm run build
 # Expose the port
-EXPOSE 3000
-
+EXPOSE 3000 
 # Start the application in watch mode
-CMD ["npm", "run", "start:dev"]
+CMD ["npm","run" ,"start:prod"]

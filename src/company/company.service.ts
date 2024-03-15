@@ -5,7 +5,7 @@ import { PrismaService } from '@app/prisma';
 import { Company, SubscriptionEnum } from '@prisma/client';
 import { SubscriptionPlans } from 'src/subscription/entities/subscription.entity';
 import dayjs from 'dayjs';
-
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CompanyService {
@@ -39,6 +39,9 @@ export class CompanyService {
   //  UPDATING COMPANY BASED ON DTO
   async update(id: number, updateCompanyDto: UpdateCompanyDto) {
     try {
+      if( updateCompanyDto.passwordHash){
+        updateCompanyDto.passwordHash = await bcrypt.hash(updateCompanyDto.passwordHash, 10)
+      }
       return await this.prismaService.company.update({
         data: { ...updateCompanyDto },
         where: {

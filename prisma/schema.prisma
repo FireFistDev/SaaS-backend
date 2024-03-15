@@ -32,7 +32,7 @@ enum Visibility {
 model Company {
   id                    Int               @id @default(autoincrement())
   isActive              Boolean           @default(false)
-  name                  String            @default("")
+  name                  String            
   email                 String            @unique
   passwordHash          String
   country               String
@@ -41,7 +41,7 @@ model Company {
   workers               User[]
   companyFiles          UploadedFile[]    @relation("companyFiles")
   subscription          SubscriptionEnum?
-  subscriptionExpiresAt DateTime          
+  subscriptionExpiresAt DateTime?           
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 }

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/auth.dto'
-import { CompanyGuard, JwtGuard } from '@app/guard/guard';
+import { CompanyGuard, userGuard } from '@app/guard/guard';
 import { Request } from 'express';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
 import { Company, User } from '@prisma/client';
@@ -22,7 +22,7 @@ export class AuthController {
   @Get('/activate/company')
   activateCompany(@Req() req: Request) {
     const  company = req.user as Company;
-    return this.authService.activateCompany(company)
+    // return this.authService.activateCompany(company)
   }
 
   // LOGIN COMPANY
@@ -32,7 +32,7 @@ export class AuthController {
   }
 
   //  ACTIVATE USER
-  @UseGuards(JwtGuard)
+  @UseGuards(userGuard)
   @Get('/activate/user')
   activateUser(@Req() req: Request) {
     const user = req.user as User;

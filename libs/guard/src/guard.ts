@@ -7,4 +7,4 @@ export class CompanyGuard extends AuthGuard('company') {}
 
 
 @Injectable()
-export class JwtGuard extends AuthGuard('jwt') {}
+export class userGuard extends AuthGuard('user') {}

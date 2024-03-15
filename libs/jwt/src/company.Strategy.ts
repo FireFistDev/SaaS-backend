@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Company } from '@prisma/client';
-import { plainToClass } from 'class-transformer';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
@@ -31,8 +30,7 @@ export class CompanyStrategy extends PassportStrategy(Strategy, 'company')  {
   }
 
   async validate(payload: Company): Promise<Company> {
-
-    if (!payload || !payload.isActive || !payload.industry) {
+    if (!payload || payload.isActive == true || !payload.industry) {
       throw new UnauthorizedException('use Valid compnay token');
     }
     return payload;

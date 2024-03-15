@@ -5,12 +5,12 @@ import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
-export class jwtStrategy extends PassportStrategy(Strategy) {
+export class userStrategy extends PassportStrategy(Strategy, 'user') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        jwtStrategy.extractFromAuthHeader,
-        jwtStrategy.extractFromQueryParam,
+        userStrategy.extractFromAuthHeader,
+        userStrategy.extractFromQueryParam,
       ]),
       secretOrKey: process.env.JWT_SECRET_STRING,
     });

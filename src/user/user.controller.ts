@@ -2,9 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UseI
 import { UserService } from './user.service';
 import { FileService } from 'src/file/file.service';
 import { Request } from 'express';
-import { JwtGuard } from '@app/guard/guard';
+import { userGuard } from '@app/guard/guard';
 import { User } from '@prisma/client';
-import { CreateFileDto } from 'src/file/dto/create-file.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 
@@ -15,7 +14,7 @@ export class UserController {
 
   @Post("uploadfile")
   @UseInterceptors(FileInterceptor('file'))
-  @UseGuards(JwtGuard)
+  @UseGuards(userGuard)
   uploadFile(@UploadedFile() file: Express.Multer.File,@Req()  req : Request){
     const user  = req.user as User;
     const fileInfo = req.body 
@@ -24,14 +23,21 @@ export class UserController {
     return this.fileService.create(createFile)
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(userGuard)
   @Post("updatefile/:id")
   updateFile(@Req()  req : Request){
     const fileId = req.params.id
     const fileData = req.body
     return this.fileService.update(fileId, fileData)
   }
-  @UseGuards(JwtGuard)
+  @UseGuards(userGuard)
+  @Get("getallfiles")
+  GetAllFile(@Req()  req : Request){
+    const user  = req.user as User;
+    return this.fileService.findUserFiles(user.companyId,user.id)
+  }
+
+  @UseGuards(userGuard)
   @Delete("deletefile/:id")
   deleteFile(@Req() req : Request){
     return this.fileService.remove(req.params.id)

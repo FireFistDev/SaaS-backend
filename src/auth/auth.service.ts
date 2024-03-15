@@ -18,12 +18,12 @@ export class AuthService {
     constructor(private jwtService: JwtService, private companyService: CompanyService, private userService: UserService, private prismaService: PrismaService) {
         this.transporter = nodemailer.createTransport({
             service: 'gmail',
-            host: 'smtp.gmail.com',
+            host: process.env.EMAIL_HOST,
             port: 465,
             secure: true,
             auth : {
-              user: 'akakigumberidze988@gmail.com',
-              pass: 'keze ypnb qgtv wvnw'
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
             }
           })
     }
@@ -31,11 +31,17 @@ export class AuthService {
     // კომპანიის რეგისტრაციისს სერვისი და პაროლის დაჰაშვა
     async registerCompany(createCompanyDto: CreateCompanyDto): Promise<any> {
         try {
+
             let passwordHash = await bcrypt.hash(createCompanyDto.passwordHash, 10)
+
             const Company = await this.companyService.create({ ...createCompanyDto, passwordHash })
+
             const token = this.jwtService.sign(Company);
+
             const link  = `auth/activate/company?token=${token}`
-            return this.sendActivationEmail(link ,Company.email)
+
+             this.sendActivationEmail(link ,Company.email)
+             return  {company : Company , link,}
         } catch (error) {
             throw new HttpException({
                 error: 'Failed to register company',
@@ -148,9 +154,9 @@ export class AuthService {
         };
         this.transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.error('Error sending email:', error);
+                return 'Error sending email:'
             } else {
-                console.log('Activation email sent:', info.response);
+                return 'Activation email sent:'
             }
         });
     }
