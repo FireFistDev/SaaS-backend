@@ -22,7 +22,7 @@ export class AuthController {
   @Get('/activate/company')
   activateCompany(@Req() req: Request) {
     const  company = req.user as Company;
-    // return this.authService.activateCompany(company)
+    return this.authService.activateCompany(company)
   }
 
   // LOGIN COMPANY

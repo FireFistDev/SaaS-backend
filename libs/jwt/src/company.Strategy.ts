@@ -30,7 +30,7 @@ export class CompanyStrategy extends PassportStrategy(Strategy, 'company')  {
   }
 
   async validate(payload: Company): Promise<Company> {
-    if (!payload || payload.isActive == true || !payload.industry) {
+    if (!payload  || !payload.industry) {
       throw new UnauthorizedException('use Valid compnay token');
     }
     return payload;

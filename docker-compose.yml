@@ -1,6 +1,22 @@
 version: '3'
 
 services:
+  mysql:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: YouDontWannaIt
+      MYSQL_USER: sweeftUser
+      MYSQL_PASSWORD: sweeftPassword
+      MYSQL_DATABASE: sweeft_db
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 20
+      interval: 5s
+      timeout: 10s
+
   app: 
     build:
       context: .
@@ -11,17 +27,6 @@ services:
       - "3000:3000"
     env_file: 
       - .env 
-    environment:
-      DATABASE_URL: "mysql://sweeft:sweeft@mysql:3306/sweeft-database?schema=public"
-
-  mysql:
-    image: mysql:latest
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: sweeft-database
-      MYSQL_USER: sweeft
-      MYSQL_PASSWORD: sweeft
-    volumes:
-      - ./mysql_data:/var/lib/mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
