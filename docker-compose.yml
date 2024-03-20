@@ -13,9 +13,9 @@ services:
       MYSQL_DATABASE: sweeft_db
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      retries: 20
       interval: 5s
       timeout: 10s
+      retries: 10
 
   app: 
     build:
@@ -27,6 +27,15 @@ services:
       - "3000:3000"
     env_file: 
       - .env 
+    working_dir: /app
+    command: |
+      sh -c "
+        until mysqladmin ping -h mysql --silent; do
+          echo 'Waiting for MySQL to be ready...';
+          sleep 1;
+        done;
+        npx prisma db push;
+        npm run start:prod"
     depends_on:
       mysql:
         condition: service_healthy
