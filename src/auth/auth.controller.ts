@@ -33,11 +33,10 @@ export class AuthController {
 
   //  ACTIVATE USER
   @UseGuards(userGuard)
-  @Get('/activate/user')
+  @Post('/activate/user')
   activateUser(@Req() req: Request) {
     const user = req.user as User;
     const payload = req.body as UpdateUserDto
-    console.log(user, payload)
     return this.authService.activateUser(user, payload)
   }
 

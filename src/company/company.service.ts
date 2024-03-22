@@ -57,13 +57,30 @@ export class CompanyService {
 
   }
 //  SELECT SUBSCRIPTION PLAN
-    async selectSubscription(companyId: number, subscriptionEnum :SubscriptionEnum) {
-      const plan = SubscriptionPlans[subscriptionEnum]
-      const currentDate = dayjs();
-      await this.prismaService.company.update({ where: { id: companyId }, data: { subscription: plan.TierName, subscriptionExpiresAt: currentDate.add(1, 'month').toDate()} })
-      const company = await this.updateBilling(companyId, -plan.price)
-      return company;
-    }
+async selectSubscription(companyId: number, subscriptionEnum: SubscriptionEnum) {
+  const plan = SubscriptionPlans[subscriptionEnum];
+  const currentDate = new Date();
+  const expirationDate = new Date(currentDate);
+  expirationDate.setMonth(expirationDate.getMonth() + 1); // Adding one month to current date
+
+  try {
+    await this.prismaService.company.update({
+      where: { id: companyId },
+      data: {
+        subscription: plan.TierName,
+        subscriptionExpiresAt: expirationDate
+      }
+    });
+
+    const updatedCompany = await this.updateBilling(companyId, -plan.price);
+    return updatedCompany;
+  } catch (error) {
+    // Handle errors appropriately
+    console.error("Error selecting subscription:", error);
+    throw error;
+  }
+}
+
 
     //  UPDATE COMPANY BILLING
     async updateBilling(id: number, billing: number) {

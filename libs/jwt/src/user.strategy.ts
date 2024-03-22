@@ -1,6 +1,7 @@
 // jwt.strategy.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { User } from '@prisma/client';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
@@ -24,12 +25,11 @@ export class userStrategy extends PassportStrategy(Strategy, 'user') {
   }
   private static extractFromQueryParam(req: Request): string | null {
     const token = req.query.token;
-    console.log(token)
     return token?.toString() || null;
   }
 
 
-  async validate(payload: any) {
+  async validate(payload: User) {
     if (!payload) {
       throw new UnauthorizedException();
     }

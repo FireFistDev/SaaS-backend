@@ -8,7 +8,7 @@ export class MulterConfigService implements MulterOptionsFactory {
     return {
       dest: 'uploads/files',
       fileFilter: (req, file, cb) => {
-        const allowedFileTypes = ['.csv', '.xls', '.xlsx' , '.js'];
+        const allowedFileTypes = ['.csv', '.xls', '.xlsx' , '.pdf'];
 
         // Check file extension
         const fileExt = path.extname(file.originalname).toLowerCase();

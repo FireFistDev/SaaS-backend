@@ -18,7 +18,7 @@ export class UserController {
   uploadFile(@UploadedFile() file: Express.Multer.File,@Req()  req : Request){
     const user  = req.user as User;
     const fileInfo = req.body 
-    console.log(file , fileInfo)
+    console.log(fileInfo)
     const createFile  = { ...fileInfo , id : file.filename, filename : file.originalname, filePath : file.path ,ownerId: user.id , companyId : user.companyId}
     return this.fileService.create(createFile)
   }
@@ -28,6 +28,7 @@ export class UserController {
   updateFile(@Req()  req : Request){
     const fileId = req.params.id
     const fileData = req.body
+
     return this.fileService.update(fileId, fileData)
   }
   @UseGuards(userGuard)

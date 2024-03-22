@@ -106,25 +106,25 @@ export class AuthService {
         const user = await this.userService.create(createUserDto)
         const token = this.jwtService.sign(user, { secret: process.env.JWT_SECRET_STRING });
 
-        const link  = `auth/activate/company?token=${token}`
-        return this.sendActivationEmail(link ,user.email)
+        const link  = `auth/activate/user?token=${token}`
+        this.sendActivationEmail(link ,user.email)
+        return token
     }
 
 
     // თანამშრომლის აქტივაცია
-    async activateUser(user : User, updateUserDto : UpdateUserDto) {
+    async activateUser(user: User, updateUserDto: UpdateUserDto) {
         try {
+            let passwordHash = await bcrypt.hash(updateUserDto.passwordHash, 10);
 
-            let passwordHash = await bcrypt.hash(updateUserDto.passwordHash, 10)
-            return this.userService.update(user.id, { passwordHash })
+            return this.userService.update(user.id, { passwordHash });
         } catch (error) {
             throw new HttpException({
                 error: 'Failed to activate User',
-                message: error.message.split('\n').reverse()[0], // You can customize the error message here
+                message: error.message.split('\n').reverse()[0], 
             }, HttpStatus.BAD_REQUEST);
         }
     }
-
 
     //  თანამშრომლის პროფილზე შესვლა 
     async loginUser(LoginDto: LoginDto) {
