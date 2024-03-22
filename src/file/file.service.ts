@@ -13,7 +13,7 @@ export class FileService {
 
   async create(createFileDto: CreateFileDto) {
     try {
-      createFileDto.visibleForWorkers = [Number(createFileDto.visibleForWorkers)];
+      createFileDto.visibleForWorkers = [...createFileDto.visibleForWorkers];
       const { companyId } = createFileDto;
 
       const company = await this.prismaService.company.findUnique({
